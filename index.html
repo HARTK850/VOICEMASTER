@@ -3,509 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת קריינות AI Ultra Pro - Gemini Powered</title>
+    <title>VoiceMaster AI Studio ✨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
-        
-        body {ש
-            font-family: 'Assistant', sans-serif;
-            background: #f1f5f9;
-            transition: all 0.3s ease;
-        }
-
-        .dark-mode {
-            background: #020617;
-            color: #f8fafc;
-        }
-
-        .dark-mode .card {
-            background: #1e293b;
-            border-color: #334155;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .loading-spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-        }
-
+        body { font-family: 'Assistant', sans-serif; background: #f1f5f9; transition: all 0.3s ease; }
+        .dark-mode { background: #020617; color: #f8fafc; }
+        .card { background: white; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .dark-mode .card { background: #1e293b; border-color: #334155; }
+        .loading-spinner { border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid currentColor; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        canvas {
-            width: 100%;
-            height: 80px;
-            border-radius: 12px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .music-tag {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .music-tag.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        .sparkle-btn {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white;
-        }
-
-        .ai-glow {
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
-        }
+        .ai-glow { box-shadow: 0 0 25px rgba(99, 102, 241, 0.15); }
+        .feature-badge { background: linear-gradient(90deg, #4f46e5, #9333ea); color: white; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: bold; }
+        .glass-panel { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8); }
+        .dark-mode .glass-panel { background: rgba(30, 41, 59, 0.8); }
     </style>
 </head>
-<body class="min-h-screen py-6 px-4" id="bodyTag">
-
-    <div class="max-w-7xl mx-auto">
+<body class="min-h-screen py-8 px-4 transition-colors duration-500" id="bodyTag">
+    <div class="max-w-6xl mx-auto">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-indigo-600 p-3 rounded-2xl text-white shadow-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                     </svg>
                 </div>
-                <h1 class="text-2xl font-black text-slate-800 dark:text-white">VOICE<span class="text-indigo-600">MASTER</span> <span class="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full mr-2 tracking-widest uppercase">Gemini Edition ✨</span></h1>
+                <div>
+                    <h1 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-none uppercase">Voice<span class="text-indigo-600">Master</span></h1>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">AI Smart Narration Hub</p>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button id="toggleDark" class="p-2 rounded-lg card shadow-sm">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            
+            <div class="flex items-center gap-2">
+                <!-- API Key Management -->
+                <div class="relative group">
+                    <button id="apiKeyBtn" class="p-3 rounded-xl card shadow-sm hover:scale-105 transition-all flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                        <span id="apiKeyStatus">הגדר מפתח</span>
+                    </button>
+                    <!-- Popover for API Key -->
+                    <div id="apiKeyPopover" class="hidden absolute left-0 mt-2 w-72 p-4 card rounded-2xl shadow-2xl z-50">
+                        <h4 class="font-bold text-sm mb-2 dark:text-white">Gemini API Key</h4>
+                        <input id="apiKeyInput" type="password" class="w-full p-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 mb-2" placeholder="AIzaSy...">
+                        <div class="flex gap-2">
+                            <button id="saveApiKey" class="flex-1 py-2 bg-indigo-600 text-white text-[10px] font-bold rounded-lg hover:bg-indigo-700">שמור מפתח</button>
+                            <button id="clearApiKey" class="flex-1 py-2 bg-red-50 text-red-600 text-[10px] font-bold rounded-lg hover:bg-red-100">מחק</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="toggleDark" class="p-3 rounded-xl card shadow-sm hover:scale-105 transition-all">
+                    <svg class="h-6 w-6 text-slate-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
-            <!-- Sidebar -->
-            <div class="xl:col-span-1 space-y-6">
-                <!-- AI Smart Tools -->
-                <div class="card p-5 rounded-2xl shadow-sm border-indigo-100 bg-gradient-to-br from-white to-indigo-50/50">
-                    <h3 class="text-sm font-bold mb-4 flex items-center gap-2 text-indigo-800">בינה מלאכותית ✨</h3>
-                    <div class="space-y-2">
-                        <button id="aiWriterBtn" class="w-full sparkle-btn text-xs font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all">צור תסריט חדש ✨</button>
-                        <button id="aiExpandBtn" class="w-full bg-indigo-50 text-indigo-700 text-xs font-bold py-3 rounded-xl hover:bg-indigo-100 transition-all flex items-center justify-center gap-2">המשך את הטקסט ✨</button>
-                        <button id="aiAnalyzeBtn" class="w-full bg-white text-indigo-600 border border-indigo-200 text-xs font-bold py-3 rounded-xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-2">ניתוח רגש והתאמה ✨</button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Sidebar / Input -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- AI Smart Generation Card -->
+                <div class="card p-6 rounded-[2rem] shadow-lg ai-glow border-indigo-100 dark:border-indigo-900/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-indigo-900 dark:text-indigo-300">יצירת תוכן חכמה</h3>
+                        <span class="feature-badge">GEMINI LLM</span>
+                    </div>
+                    <div class="flex gap-2 mb-4">
+                        <input id="promptInput" type="text" class="flex-grow p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-indigo-500" placeholder="תאר מה לכתוב (למשל: פרסומת לשירות חדש)...">
+                        <button id="magicWriteBtn" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all flex items-center justify-center min-w-[50px]">
+                            <span id="magicIcon">✨</span>
+                            <div id="magicLoader" class="loading-spinner hidden"></div>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="smartEdit('הפוך את הטקסט ליותר רגוע ונעים')" class="text-[10px] font-bold py-2 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-indigo-50 transition-all">✨ ריכוך</button>
+                        <button onclick="smartEdit('הפוך את הטקסט ליותר שיווקי ואנרגטי')" class="text-[10px] font-bold py-2 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-indigo-50 transition-all">✨ שיווקי</button>
+                        <button onclick="smartEdit('קצר את הטקסט ב-30% מבלי לאבד משמעות')" class="text-[10px] font-bold py-2 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-indigo-50 transition-all">✨ קיצור</button>
+                        <button onclick="translateText()" class="text-[10px] font-bold py-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg hover:bg-indigo-100 transition-all">✨ תרגם לאנגלית</button>
+                        <button onclick="generatePodcastScript()" class="text-[10px] font-bold py-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg hover:bg-indigo-100 transition-all">✨ תסריט פודקאסט</button>
+                        <button onclick="summarizeText()" class="text-[10px] font-bold py-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg hover:bg-indigo-100 transition-all">✨ סיכום נקודות</button>
                     </div>
                 </div>
 
-                <div class="card p-5 rounded-2xl shadow-sm border-emerald-100">
-                    <h3 class="text-sm font-bold mb-4 text-emerald-800">עריכה מהירה ✨</h3>
-                    <div class="space-y-2">
-                        <button id="vocalizeBtn" class="w-full bg-emerald-50 text-emerald-600 text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-100 transition-all">ניקוד אוטומטי ✨</button>
-                        <button id="refineBtn" class="w-full bg-emerald-50 text-emerald-600 text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-100 transition-all">ליטוש וסגנון ✨</button>
+                <!-- Main Narration Card -->
+                <div class="card p-7 rounded-[2.5rem] shadow-xl border-none">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-bold text-slate-500 dark:text-slate-400">טקסט לקריינות</label>
+                        <button id="analyzeToneBtn" class="text-[11px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full hover:bg-indigo-100 transition-all flex items-center gap-1">
+                            <span>✨ התאם סגנון אוטומטית</span>
+                            <div id="toneLoader" class="loading-spinner hidden !w-3 !h-3"></div>
+                        </button>
                     </div>
-                </div>
-
-                <div class="card p-5 rounded-2xl shadow-sm">
-                    <h3 class="text-sm font-bold mb-4">מוזיקת רקע</h3>
-                    <div class="flex flex-wrap gap-2 mb-4" id="musicOptions">
-                        <span class="music-tag active px-3 py-1 rounded-full bg-slate-100 text-xs font-medium" data-src="">ללא</span>
-                        <span class="music-tag px-3 py-1 rounded-full bg-slate-100 text-xs font-medium" data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Lo-Fi</span>
-                        <span class="music-tag px-3 py-1 rounded-full bg-slate-100 text-xs font-medium" data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3">דרמטי</span>
-                    </div>
-                    <input type="range" id="musicVol" min="0" max="0.5" step="0.05" value="0.1" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-indigo-600">
-                </div>
-            </div>
-
-            <!-- Editor & Controls -->
-            <div class="xl:col-span-3 space-y-6">
-                <div class="card p-6 rounded-3xl shadow-sm ai-glow">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex gap-2">
-                             <button id="aiTranslateBtn" class="text-xs font-bold bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition-all">תרגום מהיר ✨</button>
-                        </div>
-                        <button id="clearText" class="text-xs text-slate-400 hover:text-red-500 transition-colors">נקה הכל</button>
-                    </div>
-                    <textarea id="textInput" rows="10" class="w-full p-6 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-xl leading-relaxed custom-scrollbar" placeholder="הקלד כאן את הטקסט לקריינות..."></textarea>
-                    <div class="flex justify-between mt-4 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span id="charCount">0 תווים</span>
-                        <span id="estTime">זמן מוערך: 0:00</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card p-6 rounded-3xl shadow-sm space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-400 block mb-2">קריין</label>
-                                <select id="voiceSelect" class="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none text-sm font-semibold">
-                                    <optgroup label="גברים (Male)">
-                                        <option value="Fenrir">Fenrir (סמכותי)</option>
-                                        <option value="Puck">Puck (צעיר)</option>
-                                        <option value="Charon">Charon (עמוק)</option>
-                                        <option value="Kore">Kore (עסקי)</option>
-                                    </optgroup>
-                                    <optgroup label="נשים (Female)">
-                                        <option value="Aoede">Aoede (רגועה)</option>
-                                        <option value="Leda">Leda (ברורה)</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-400 block mb-2">סגנון רגשי</label>
-                                <select id="styleSelect" class="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none text-sm">
-                                    <option value="natural">טבעי</option>
-                                    <option value="cheerful">שמח ואנרגטי</option>
-                                    <option value="serious">רשמי וקר</option>
-                                    <option value="whisper">לחישה סודית</option>
-                                    <option value="news">חדשותי/דיווח</option>
-                                    <option value="drama">דרמטי/מרגש</option>
-                                    <option value="storytelling">מספר סיפורים</option>
-                                    <option value="shouting">צעקה/אזהרה</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button id="generateBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3">
-                            <span id="btnText">הפק קריינות עכשיו</span>
-                            <div id="btnLoader" class="loading-spinner hidden"></div>
+                    <textarea id="textInput" rows="6" class="w-full p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl outline-none border-2 border-transparent focus:border-indigo-500 transition-all text-lg dark:text-white" placeholder="הטקסט יופיע כאן..."></textarea>
+                    
+                    <div class="flex gap-2 mt-4 mb-6">
+                        <button id="vocalizeBtn" class="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center justify-center gap-2">
+                            <span>✨ ניקוד אוטומטי</span>
+                            <div id="vocalizeLoader" class="loading-spinner hidden"></div>
                         </button>
                     </div>
 
-                    <div class="card p-6 rounded-3xl shadow-sm flex flex-col justify-center min-h-[220px]">
-                        <div id="playerPlaceholder" class="flex flex-col items-center justify-center h-full text-slate-300 gap-3">
-                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <p class="text-xs font-bold uppercase tracking-widest">ממתין להפקה</p>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mr-1">קול</label>
+                            <select id="voiceSelect" class="w-full p-3 bg-slate-100 dark:bg-slate-800 dark:text-white rounded-xl text-xs font-bold border-none outline-none mt-1">
+                                <optgroup label="גברים (Male)">
+                                    <option value="Zephyr">Zephyr (קליל)</option>
+                                    <option value="Fenrir">Fenrir (עמוק)</option>
+                                    <option value="Puck">Puck (שובב)</option>
+                                    <option value="Charon">Charon (סמכותי)</option>
+                                    <option value="Orus">Orus (קלאסי)</option>
+                                    <option value="Enceladus">Enceladus (צעיר)</option>
+                                    <option value="Iapetus">Iapetus (חם)</option>
+                                    <option value="Algieba">Algieba (נמרץ)</option>
+                                    <option value="Rasalgethi">Rasalgethi (בוגר)</option>
+                                    <option value="Achernar">Achernar (יציב)</option>
+                                    <option value="Alnilam">Alnilam (בהיר)</option>
+                                    <option value="Schedar">Schedar (נעים)</option>
+                                    <option value="Achird">Achird (שידור)</option>
+                                    <option value="Zubenelgenubi">Zubenelgenubi (עמוק מאוד)</option>
+                                    <option value="Sadachbia">Sadachbia (רך)</option>
+                                    <option value="Sadaltager">Sadaltager (טבעי)</option>
+                                    <option value="Sulafat">Sulafat (עוצמתי)</option>
+                                </optgroup>
+                                <optgroup label="נשים (Female)">
+                                    <option value="Kore" selected>Kore (מקצועי)</option>
+                                    <option value="Leda">Leda (עדין)</option>
+                                    <option value="Aoede">Aoede (רך)</option>
+                                    <option value="Callirrhoe">Callirrhoe (רהוט)</option>
+                                    <option value="Autonoe">Autonoe (אנרגטי)</option>
+                                    <option value="Umbriel">Umbriel (מסתורי)</option>
+                                    <option value="Despina">Despina (מהיר)</option>
+                                    <option value="Erinome">Erinome (ידידותי)</option>
+                                    <option value="Algenib">Algenib (חדשותי)</option>
+                                    <option value="Laomedeia">Laomedeia (מרגיע)</option>
+                                    <option value="Gacrux">Gacrux (אלגנטי)</option>
+                                    <option value="Pulcherrima">Pulcherrima (עשיר)</option>
+                                    <option value="Vindemiatrix">Vindemiatrix (סבלני)</option>
+                                </optgroup>
+                            </select>
                         </div>
-                        <div id="activePlayer" class="hidden space-y-4 w-full">
-                            <canvas id="visualizer"></canvas>
-                            <audio id="audioPlayer" controls class="w-full"></audio>
-                            <audio id="bgMusicPlayer" loop></audio>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mr-1">סגנון והגשה</label>
+                            <select id="styleSelect" class="w-full p-3 bg-slate-100 dark:bg-slate-800 dark:text-white rounded-xl text-xs font-bold border-none outline-none mt-1">
+                                <option value="natural">טבעי (Natural)</option>
+                                <option value="cheerful">שמח (Cheerful)</option>
+                                <option value="serious">רציני (Serious)</option>
+                                <option value="whisper">לחישה (Whisper)</option>
+                                <option value="excited">נרגש (Excited)</option>
+                                <option value="calm">רגוע (Calm)</option>
+                                <option value="authoritative">סמכותי (Authoritative)</option>
+                                <option value="friendly">ידידותי (Friendly)</option>
+                                <option value="professional">מקצועי (Professional)</option>
+                                <option value="storytelling">מספר סיפורים (Storytelling)</option>
+                                <option value="shouting">צעקה (Shouting)</option>
+                                <option value="terrified">מבועת (Terrified)</option>
+                                <option value="sad">עצוב (Sad)</option>
+                                <option value="angry">כועס (Angry)</option>
+                                <option value="hopeful">מלא תקווה (Hopeful)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <button id="generateBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3">
+                        <span id="btnText">הפק קריינות עכשיו</span>
+                        <div id="btnLoader" class="loading-spinner hidden !border-t-white"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Library / History -->
+            <div class="lg:col-span-7">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold dark:text-white">הקלטות אחרונות</h2>
+                    <button id="clearTracks" class="text-xs text-slate-400 hover:text-red-500 font-bold transition-colors">נקה הכל</button>
+                </div>
+                <div id="tracksContainer" class="space-y-4">
+                    <div id="noTracks" class="text-center py-24 border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-[2.5rem] text-slate-400 font-bold">
+                        היסטוריית הקריינות שלך תישמר כאן
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- AI Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl">
-            <h3 id="modalTitle" class="text-xl font-bold mb-4 text-indigo-800">מה הנושא שלך? ✨</h3>
-            <textarea id="aiPromptInput" class="w-full p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-6 outline-none min-h-[100px]" placeholder="לדוגמה: פרסומת לבית קפה חדש..."></textarea>
-            <div class="flex gap-3">
-                <button id="modalAction" class="flex-grow bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-indigo-700 transition-all">בצע ✨</button>
-                <button id="modalClose" class="px-6 bg-slate-200 dark:bg-slate-700 font-bold py-3 rounded-xl">ביטול</button>
-            </div>
-        </div>
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 left-8 px-6 py-3 rounded-xl shadow-2xl opacity-0 transition-all pointer-events-none z-50 transform translate-y-4 flex items-center gap-2">
+        <span id="toastIcon"></span>
+        <span id="toastMessage"></span>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const apiKey = ""; // Environment handles this
-            const state = { audioContext: null, analyser: null, animationId: null };
+        // Global State & Config
+        let currentApiKey = localStorage.getItem('gemini_api_key') || "";
+        const modelText = "gemini-2.5-flash-preview-09-2025";
+        const modelAudio = "gemini-2.5-flash-preview-tts";
 
-            const els = {
-                body: document.getElementById('bodyTag'),
-                textInput: document.getElementById('textInput'),
-                charCount: document.getElementById('charCount'),
-                estTime: document.getElementById('estTime'),
-                generateBtn: document.getElementById('generateBtn'),
-                btnText: document.getElementById('btnText'),
-                btnLoader: document.getElementById('btnLoader'),
-                playerPlaceholder: document.getElementById('playerPlaceholder'),
-                activePlayer: document.getElementById('activePlayer'),
-                audioPlayer: document.getElementById('audioPlayer'),
-                bgMusicPlayer: document.getElementById('bgMusicPlayer'),
-                visualizer: document.getElementById('visualizer'),
-                musicOptions: document.querySelectorAll('.music-tag'),
-                musicVol: document.getElementById('musicVol'),
-                aiModal: document.getElementById('aiModal'),
-                aiPromptInput: document.getElementById('aiPromptInput'),
-                modalTitle: document.getElementById('modalTitle'),
-                modalAction: document.getElementById('modalAction'),
-                modalClose: document.getElementById('modalClose'),
-                toggleDark: document.getElementById('toggleDark'),
-                clearText: document.getElementById('clearText'),
-                vocalizeBtn: document.getElementById('vocalizeBtn'),
-                refineBtn: document.getElementById('refineBtn'),
-                voiceSelect: document.getElementById('voiceSelect'),
-                styleSelect: document.getElementById('styleSelect'),
-                aiWriterBtn: document.getElementById('aiWriterBtn'),
-                aiExpandBtn: document.getElementById('aiExpandBtn'),
-                aiAnalyzeBtn: document.getElementById('aiAnalyzeBtn'),
-                aiTranslateBtn: document.getElementById('aiTranslateBtn')
-            };
+        const els = {
+            textInput: document.getElementById('textInput'),
+            promptInput: document.getElementById('promptInput'),
+            generateBtn: document.getElementById('generateBtn'),
+            magicWriteBtn: document.getElementById('magicWriteBtn'),
+            analyzeToneBtn: document.getElementById('analyzeToneBtn'),
+            voiceSelect: document.getElementById('voiceSelect'),
+            styleSelect: document.getElementById('styleSelect'),
+            tracksContainer: document.getElementById('tracksContainer'),
+            noTracks: document.getElementById('noTracks'),
+            body: document.getElementById('bodyTag'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage'),
+            // API Key elements
+            apiKeyBtn: document.getElementById('apiKeyBtn'),
+            apiKeyPopover: document.getElementById('apiKeyPopover'),
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            saveApiKey: document.getElementById('saveApiKey'),
+            clearApiKey: document.getElementById('clearApiKey'),
+            apiKeyStatus: document.getElementById('apiKeyStatus')
+        };
 
-            // Helpers
-            const setLoading = (l) => {
-                if (!els.generateBtn) return;
-                els.generateBtn.disabled = l;
-                els.btnText.textContent = l ? "מעבד שמע..." : "הפק קריינות עכשיו";
-                els.btnLoader.classList.toggle('hidden', !l);
-            };
+        // Initialize UI
+        function updateApiStatus() {
+            if (currentApiKey) {
+                els.apiKeyStatus.innerText = "מפתח מוגדר ✅";
+                els.apiKeyStatus.classList.add('text-green-600');
+                els.apiKeyInput.value = currentApiKey;
+            } else {
+                els.apiKeyStatus.innerText = "הגדר מפתח ⚠️";
+                els.apiKeyStatus.classList.remove('text-green-600');
+                els.apiKeyInput.value = "";
+            }
+        }
+        updateApiStatus();
 
-            const showModal = (title, placeholder, action) => {
-                els.modalTitle.textContent = title;
-                els.aiPromptInput.placeholder = placeholder;
-                els.aiPromptInput.value = "";
-                els.aiModal.classList.remove('hidden');
-                els.aiModal.classList.add('flex');
-                els.modalAction.onclick = action;
-            };
+        // API Key Popover Toggle
+        els.apiKeyBtn.onclick = (e) => {
+            e.stopPropagation();
+            els.apiKeyPopover.classList.toggle('hidden');
+        };
 
-            // Enhanced AI Logic with better error handling
-            async function callGemini(prompt, isJson = false) {
-                let retryCount = 0;
-                const maxRetries = 5;
-                const backoff = (retry) => new Promise(res => setTimeout(res, Math.pow(2, retry) * 1000));
+        els.saveApiKey.onclick = () => {
+            const key = els.apiKeyInput.value.trim();
+            if (key) {
+                currentApiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                updateApiStatus();
+                els.apiKeyPopover.classList.add('hidden');
+                showToast("מפתח ה-API נשמר בהצלחה", "success");
+            }
+        };
 
-                while (retryCount < maxRetries) {
-                    try {
-                        const config = {
-                            contents: [{ parts: [{ text: prompt }] }],
-                        };
-                        if (isJson) {
-                            config.generationConfig = { responseMimeType: "application/json" };
-                        }
+        els.clearApiKey.onclick = () => {
+            currentApiKey = "";
+            localStorage.removeItem('gemini_api_key');
+            updateApiStatus();
+            showToast("מפתח ה-API נמחק");
+        };
 
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(config)
-                        });
+        document.addEventListener('click', () => els.apiKeyPopover.classList.add('hidden'));
+        els.apiKeyPopover.onclick = (e) => e.stopPropagation();
 
-                        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-
-                        const data = await res.json();
-                        const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                        
-                        if (!resultText) throw new Error("Empty response from AI");
-                        return resultText;
-
-                    } catch (e) {
-                        retryCount++;
-                        if (retryCount >= maxRetries) {
-                            console.error("Gemini Final Error:", e);
-                            return null;
-                        }
-                        await backoff(retryCount);
-                    }
-                }
+        // Utility: API Caller with retry logic
+        async function apiCall(model, payload, retries = 5) {
+            if (!currentApiKey) {
+                showToast("אנא הגדר מפתח API בתפריט למעלה");
+                els.apiKeyPopover.classList.remove('hidden');
+                throw new Error("Missing API Key");
             }
 
-            async function runAiTool(btn, systemPrompt, customPrompt = null, append = false) {
-                const text = customPrompt || els.textInput.value.trim();
-                if (!text && !customPrompt) return;
-                
-                const originalHtml = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = `<div class="loading-spinner"></div>`;
-                
-                const result = await callGemini(`${systemPrompt}: \n\n${text}`);
-                if (result) {
-                    if (append) {
-                        els.textInput.value += "\n\n" + result.trim();
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${model.includes('tts') ? 'generateContent' : 'generateContent'}?key=${currentApiKey}`;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (response.ok) return data;
+                    if (response.status === 429) {
+                        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                    } else if (response.status === 403 || response.status === 401) {
+                        showToast("מפתח ה-API אינו תקין");
+                        throw new Error("Invalid API Key");
                     } else {
-                        els.textInput.value = result.trim();
+                        throw new Error(data.error?.message || "Communication Error");
                     }
-                    els.textInput.dispatchEvent(new Event('input'));
-                } else {
-                    console.error("AI Tool failed to return result");
+                } catch (e) {
+                    if (i === retries - 1) throw e;
                 }
-                
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-                els.aiModal.classList.add('hidden');
             }
+        }
 
-            // --- Gemini Features ---
+        function showToast(msg, type = 'error') {
+            els.toastMessage.innerText = msg;
+            els.toast.className = `fixed bottom-8 left-8 px-6 py-3 rounded-xl shadow-2xl transition-all z-50 transform translate-y-0 opacity-100 ${type === 'error' ? 'bg-red-600' : 'bg-indigo-600'} text-white`;
+            setTimeout(() => { els.toast.classList.add('opacity-0', 'translate-y-4'); }, 4000);
+        }
 
-            els.aiAnalyzeBtn.onclick = async () => {
-                const text = els.textInput.value.trim();
-                if (!text) return;
-                
-                const btn = els.aiAnalyzeBtn;
-                const originalHtml = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = `<div class="loading-spinner"></div>`;
+        // --- LLM Features ---
 
-                const prompt = `Analyze this voiceover script and suggest the best 'voice' and 'style' from the following options. 
-                Voices: Fenrir, Puck, Charon, Kore, Aoede, Leda.
-                Styles: natural, cheerful, serious, whisper, news, drama, storytelling, shouting.
-                Return ONLY a JSON object: {"voice": "...", "style": "...", "reason": "..."}.
-                Script: ${text}`;
-
-                const result = await callGemini(prompt, true);
-                if (result) {
-                    try {
-                        const suggestion = JSON.parse(result);
-                        els.voiceSelect.value = suggestion.voice;
-                        els.styleSelect.value = suggestion.style;
-                        btn.classList.add('bg-indigo-600', 'text-white');
-                        setTimeout(() => btn.classList.remove('bg-indigo-600', 'text-white'), 2000);
-                    } catch (e) {
-                        console.error("Failed to parse AI Suggestion JSON", e);
-                    }
-                }
-                
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            };
-
-            els.aiExpandBtn.onclick = (e) => runAiTool(e.currentTarget, "המשך את הטקסט הבא בעוד פסקה אחת בלבד שמתאימה לסגנון", null, true);
-
-            els.aiWriterBtn.onclick = () => {
-                showModal("על מה התסריט? ✨", "תאר את הנושא או המוצר...", (e) => {
-                    runAiTool(e.currentTarget, "כתוב תסריט קריינות מקצועי באורך בינוני על הנושא הבא", els.aiPromptInput.value);
+        // ✨ Magic Write
+        els.magicWriteBtn.onclick = async () => {
+            const prompt = els.promptInput.value.trim();
+            if (!prompt) return showToast("תאר מה לכתוב בתיבה");
+            
+            toggleLoader('magic', true);
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `כתוב סקריפט קצר ומקצועי לקריינות בעברית עבור הנושא הבא: "${prompt}". החזר רק את הטקסט של הסקריפט ללא הסברים או כותרות.` }] }]
                 });
-            };
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+            toggleLoader('magic', false);
+        };
 
-            els.vocalizeBtn.onclick = (e) => runAiTool(e.currentTarget, "הוסף ניקוד מלא ומדויק לעברית");
-            els.refineBtn.onclick = (e) => runAiTool(e.currentTarget, "שפר את הניסוח שיהיה קולח ומתאים לקריינות");
-            els.aiTranslateBtn.onclick = (e) => runAiTool(e.currentTarget, "תרגם את הטקסט לשפה השנייה (עברית לאנגלית או להפך)");
+        // ✨ Smart Edit
+        async function smartEdit(instruction) {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("הכנס קודם טקסט לתיבה");
+            
+            showToast("מעבד טקסט...", "success");
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `${instruction} על הטקסט הבא: "${text}". החזר רק את הטקסט המעובד.` }] }]
+                });
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+        }
 
-            // Generation & Audio
-            async function generate() {
-                const text = els.textInput.value.trim();
-                if (!text) return;
-                setLoading(true);
-                
-                const voice = els.voiceSelect.value;
-                const style = els.styleSelect.value;
-                const stylePromptMap = {
-                    natural: "natural and clear",
-                    cheerful: "cheerful and happy",
-                    serious: "serious and professional",
-                    whisper: "whispering and quiet",
-                    news: "news reporting style",
-                    drama: "emotional and dramatic",
-                    storytelling: "engaging storytelling",
-                    shouting: "shouting and urgent"
-                };
+        // ✨ Translate
+        async function translateText() {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("אין טקסט לתרגום");
+            showToast("מתרגם לאנגלית...", "success");
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `Translate the following text to fluent English suitable for narration: "${text}". Return only the translation.` }] }]
+                });
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+        }
 
-                let retryCount = 0;
-                const maxRetries = 5;
-                const backoff = (retry) => new Promise(res => setTimeout(res, Math.pow(2, retry) * 1000));
+        // ✨ Podcast Script
+        async function generatePodcastScript() {
+            const topic = els.promptInput.value.trim() || "Technology";
+            showToast("יוצר תסריט פודקאסט...", "success");
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `Create a short podcast script dialogue between two people about: "${topic}". Return only the dialogue in Hebrew.` }] }]
+                });
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+        }
 
-                while (retryCount < maxRetries) {
-                    try {
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: `Say this in a ${stylePromptMap[style]} tone: ${text}` }] }],
-                                generationConfig: {
-                                    responseModalities: ["AUDIO"],
-                                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } }
-                                },
-                                model: "gemini-2.5-flash-preview-tts"
-                            })
-                        });
+        // ✨ Summarize
+        async function summarizeText() {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("אין טקסט לסיכום");
+            showToast("מסכם לנקודות...", "success");
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `Summarize the following text into 3 clear key points for narration in Hebrew: "${text}".` }] }]
+                });
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+        }
 
-                        if (!response.ok) throw new Error(`TTS HTTP Error: ${response.status}`);
+        // ✨ Tone Analysis
+        els.analyzeToneBtn.onclick = async () => {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("אין טקסט לניתוח");
+            
+            toggleLoader('tone', true);
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `Analyze the sentiment of the following text and pick the best speaking style from this list: (natural, cheerful, serious, whisper, excited, calm, authoritative, friendly, professional, storytelling, shouting, terrified, sad, angry, hopeful). Return ONLY the English word. Text: "${text}"` }] }]
+                });
+                const choice = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+                if (choice) {
+                    const cleanChoice = choice.replace(/[^a-z]/g, '');
+                    const option = Array.from(els.styleSelect.options).find(o => o.value === cleanChoice);
+                    if (option) {
+                        els.styleSelect.value = cleanChoice;
+                        showToast(`הסגנון הותאם ל: ${option.text}`, "success");
+                    }
+                }
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+            toggleLoader('tone', false);
+        };
 
-                        const data = await response.json();
-                        const audioData = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-                        
-                        if (audioData) {
-                            const blob = pcmToWav(audioData, 24000);
-                            const url = URL.createObjectURL(blob);
-                            els.audioPlayer.src = url;
-                            els.playerPlaceholder.classList.add('hidden');
-                            els.activePlayer.classList.remove('hidden');
-                            els.audioPlayer.play().catch(e => console.error("Audio Play Error:", e));
-                            setupVisualizer();
-                            break; // Success
-                        } else {
-                            throw new Error("No audio data received");
+        // ✨ Vocalization (Nikud)
+        document.getElementById('vocalizeBtn').onclick = async () => {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("אין טקסט לניקוד");
+            toggleLoader('vocalize', true);
+            try {
+                const data = await apiCall(modelText, {
+                    contents: [{ parts: [{ text: `הוסף ניקוד דקדוקי מלא ומדויק לטקסט הבא בעברית: "${text}". החזר רק את הטקסט המנוקד.` }] }]
+                });
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (result) els.textInput.value = result.trim();
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+            toggleLoader('vocalize', false);
+        };
+
+        // --- TTS Core ---
+        els.generateBtn.onclick = async () => {
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("הכנס טקסט לקריינות");
+            
+            toggleLoader('btn', true);
+            try {
+                const result = await apiCall(modelAudio, {
+                    contents: [{ parts: [{ text: `Say in a ${els.styleSelect.value} style: ${text}` }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { 
+                            voiceConfig: { 
+                                prebuiltVoiceConfig: { 
+                                    voiceName: els.voiceSelect.value 
+                                } 
+                            } 
                         }
-                    } catch (err) {
-                        retryCount++;
-                        if (retryCount >= maxRetries) {
-                            console.error("TTS Generation Final Failure:", err);
-                        } else {
-                            await backoff(retryCount);
-                        }
                     }
-                }
-                setLoading(false);
-            }
+                });
 
-            function pcmToWav(base64, rate) {
-                const binary = atob(base64);
-                const len = binary.length;
-                const buf = new ArrayBuffer(44 + len);
-                const view = new DataView(buf);
-                const s = (o, str) => { for(let i=0;i<str.length;i++) view.setUint8(o+i, str.charCodeAt(i)) };
-                s(0, 'RIFF'); view.setUint32(4, 32+len, true); s(8, 'WAVE'); s(12, 'fmt ');
-                view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-                view.setUint32(24, rate, true); view.setUint32(28, rate*2, true);
-                view.setUint16(32, 2, true); view.setUint16(34, 16, true); s(36, 'data');
-                view.setUint32(40, len, true);
-                for(let i=0;i<len;i++) view.setUint8(44+i, binary.charCodeAt(i));
-                return new Blob([buf], { type: 'audio/wav' });
-            }
+                const pcmData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                const mimeType = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "";
+                const sampleRate = parseInt(mimeType.split('rate=')[1]) || 24000;
 
-            function setupVisualizer() {
-                if (!state.audioContext) {
-                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = state.audioContext.createMediaElementSource(els.audioPlayer);
-                    state.analyser = state.audioContext.createAnalyser();
-                    source.connect(state.analyser);
-                    state.analyser.connect(state.audioContext.destination);
-                    state.analyser.fftSize = 64;
+                if (pcmData) {
+                    const blob = pcmToWav(pcmData, sampleRate);
+                    addTrack(blob, text.substring(0, 30));
+                    showToast("קריינות הופקה בהצלחה!", "success");
                 }
-                const ctx = els.visualizer.getContext('2d');
-                const dataArray = new Uint8Array(state.analyser.frequencyBinCount);
-                function draw() {
-                    state.animationId = requestAnimationFrame(draw);
-                    state.analyser.getByteFrequencyData(dataArray);
-                    ctx.clearRect(0, 0, els.visualizer.width, els.visualizer.height);
-                    const barWidth = (els.visualizer.width / dataArray.length) * 1.5;
-                    let x = 0;
-                    for(let i = 0; i < dataArray.length; i++) {
-                        const h = dataArray[i] / 2.5;
-                        ctx.fillStyle = els.body.classList.contains('dark-mode') ? '#818cf8' : '#6366f1';
-                        ctx.fillRect(x, els.visualizer.height - h, barWidth - 2, h);
-                        x += barWidth;
-                    }
-                }
-                if(state.animationId) cancelAnimationFrame(state.animationId);
-                draw();
-            }
+            } catch (e) { if(e.message !== "Missing API Key") showToast(e.message); }
+            toggleLoader('btn', false);
+        };
 
-            // Standard events
-            els.textInput.oninput = () => {
-                const val = els.textInput.value.trim();
-                els.charCount.textContent = `${val.length} תווים`;
-                const sec = Math.floor(val.length / 14);
-                els.estTime.textContent = `זמן מוערך: ${Math.floor(sec/60)}:${(sec%60).toString().padStart(2, '0')}`;
-            };
-            els.musicOptions.forEach(opt => {
-                opt.onclick = () => {
-                    els.musicOptions.forEach(o => o.classList.remove('active'));
-                    opt.classList.add('active');
-                    const src = opt.getAttribute('data-src');
-                    if (src) {
-                        els.bgMusicPlayer.src = src;
-                        els.bgMusicPlayer.volume = els.musicVol.value;
-                        if (!els.audioPlayer.paused) els.bgMusicPlayer.play().catch(e => {});
-                    } else {
-                        els.bgMusicPlayer.pause();
-                        els.bgMusicPlayer.src = "";
-                    }
-                };
-            });
-            els.musicVol.oninput = (e) => els.bgMusicPlayer.volume = e.target.value;
-            els.clearText.onclick = () => { els.textInput.value = ""; els.textInput.dispatchEvent(new Event('input')); };
-            els.toggleDark.onclick = () => els.body.classList.toggle('dark-mode');
-            els.modalClose.onclick = () => els.aiModal.classList.add('hidden');
-            els.generateBtn.onclick = generate;
-        });
+        // --- Helpers ---
+        function toggleLoader(key, show) {
+            const l = document.getElementById(key + 'Loader');
+            const i = document.getElementById(key + 'Icon');
+            const t = document.getElementById(key + 'Text');
+            if (l) l.classList.toggle('hidden', !show);
+            if (i) i.classList.toggle('hidden', show);
+            if (t) t.innerText = show ? "מעבד..." : "הפק קריינות עכשיו";
+            if (key === 'btn') els.generateBtn.disabled = show;
+        }
+
+        function pcmToWav(base64, rate) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const header = new ArrayBuffer(44);
+            const v = new DataView(header);
+            const s = (off, str) => { for (let i = 0; i < str.length; i++) v.setUint8(off + i, str.charCodeAt(i)); };
+            s(0, 'RIFF'); v.setUint32(4, 36 + bytes.length, true); s(8, 'WAVE'); s(12, 'fmt '); v.setUint32(16, 16, true);
+            v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+            v.setUint16(32, 2, true); v.setUint16(34, 16, true); s(36, 'data'); v.setUint32(40, bytes.length, true);
+            return new Blob([header, bytes], { type: 'audio/wav' });
+        }
+
+        function addTrack(blob, title) {
+            els.noTracks.classList.add('hidden');
+            const url = URL.createObjectURL(blob);
+            const div = document.createElement('div');
+            div.className = "card p-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom duration-300 shadow-sm border-slate-100 dark:border-slate-800";
+            div.innerHTML = `
+                <div class="flex-grow">
+                    <div class="font-bold text-sm truncate dark:text-white">${title}...</div>
+                    <div class="text-[10px] text-slate-400">${els.voiceSelect.value} | ${els.styleSelect.value}</div>
+                </div>
+                <audio src="${url}" controls class="h-8 w-40"></audio>
+                <div class="flex gap-1">
+                    <a href="${url}" download="voice_${Date.now()}.wav" class="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </a>
+                </div>
+            `;
+            els.tracksContainer.prepend(div);
+        }
+
+        document.getElementById('toggleDark').onclick = () => els.body.classList.toggle('dark-mode');
+        document.getElementById('clearTracks').onclick = () => {
+            els.tracksContainer.querySelectorAll('.card').forEach(c => c.remove());
+            els.noTracks.classList.remove('hidden');
+        };
     </script>
 </body>
 </html>
