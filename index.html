@@ -531,12 +531,10 @@
             }
             // אם מדובר במודל שמע, נשתמש ב-Endpoint העדכני של גוגל למניעת שגיאות 429
 let url;
-// הפיכת שם המודל לאותיות קטנות כדי לוודא זיהוי של ה-tts
 if (model.toLowerCase().includes('tts')) {
-    // עבור מודל שמע משתמשים ב-predict כדי למנוע שגיאות פרוטוקול ומכסה (429)
-    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${currentApiKey}`;
+    // כתובת ה-API הייעודית להפקת מדיה / שמע
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:synthesizeSpeech?key=${currentApiKey}`;
 } else {
-    // עבור מודל טקסט רגיל משתמשים ב-generateContent
     url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
 }
             
@@ -724,19 +722,16 @@ if (model.toLowerCase().includes('tts')) {
                 // שליחת הבקשות בצורה סדרתית כדי למנוע שגיאת 429
 const results = [];
 for (const seg of segments) {
-    const res = await apiCall(modelAudio, {
-        contents: [{ parts: [{ text: `Say in a ${seg.style} style: ${seg.text}` }] }],
-        generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-                voiceConfig: {
-                    prebuiltVoiceConfig: {
-                        voiceName: els.voiceSelect.value
-                    }
-                }
-            }
+const result = await apiCall(modelAudio, {
+    text: text,
+    voiceConfig: {
+        prebuiltVoiceConfig: {
+            voiceName: els.voiceSelect.value
         }
-    });
+    },
+    // הוספת הסגנון כהנחיה מובנית למודל השמע
+    speakingStyle: els.styleSelect.value.toUpperCase() 
+});
     results.push(res);
     // אופציונלי: השהייה קלה של 200 מילישניות בין בקשה לבקשה לביטחון מקסימלי
     await new Promise(r => setTimeout(r, 200));
