@@ -732,8 +732,10 @@
                 const segments = parseMultiStyleText(text);
                 
                 // Concurrent performance optimizations for parallel model audio synthesis streams
-                const audioPromises = segments.map(async (seg) => {
-    return await apiCall(modelAudio, {
+const results = [];
+
+for (const seg of segments) {
+    const res = await apiCall(modelAudio, {
         contents: [{ parts: [{ text: `Say in a ${seg.style} style: ${seg.text}` }] }],
         generationConfig: {
             responseModalities: ["AUDIO"],
@@ -746,9 +748,12 @@
             }
         }
     });
-});
 
-const results = await Promise.all(audioPromises);                
+    results.push(res);
+
+    // קטן מאוד אבל קריטי נגד rate limit
+    await new Promise(r => setTimeout(r, 300));
+}           
                 let totalLength = 0;
                 const byteSegments = results.map(res => {
                     const base64Data = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
