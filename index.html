@@ -561,7 +561,11 @@
                     }
                     if (response.ok) return data;
                     if (response.status === 429) {
-                        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+    const retryAfter = response.headers.get("retry-after");
+    const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, i) * 1000;
+
+    await new Promise(r => setTimeout(r, waitTime));
+}
                     } else if (response.status === 403 || response.status === 401) {
                         showToast("מפתח ה-API אינו תקין");
                         throw new Error("Invalid API Key");
@@ -984,15 +988,20 @@ document.addEventListener("click", () => {
     aryaMenu.classList.add("hidden");
 });
 
-        function saveKeys(keys) {
-    localStorage.setItem('gemini_api_keys', JSON.stringify(keys));
-}
+        const lastUsed = {};
 
-        function getNextApiKey() {
+function getNextApiKey() {
     if (!apiKeys.length) return null;
 
-    const key = apiKeys[currentKeyIndex % apiKeys.length];
+    let key = apiKeys[currentKeyIndex % apiKeys.length];
     currentKeyIndex++;
+
+    const now = Date.now();
+    if (lastUsed[key] && now - lastUsed[key] < 1000) {
+        return null; // מונע שימוש מהיר מדי
+    }
+
+    lastUsed[key] = now;
     return key;
 }
     </script>
