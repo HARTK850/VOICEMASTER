@@ -748,9 +748,7 @@
     });
 });
 
-const results = await Promise.all(audioPromises);
-                const results = await Promise.all(audioPromises);
-                
+const results = await Promise.all(audioPromises);                
                 let totalLength = 0;
                 const byteSegments = results.map(res => {
                     const base64Data = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
