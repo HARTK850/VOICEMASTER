@@ -529,12 +529,14 @@
                 els.apiKeyPopover.classList.remove('hidden');
                 throw new Error("Missing API Key");
             }
-            console.log(JSON.stringify(payload, null, 2));
             // אם מדובר במודל שמע, נשתמש ב-Endpoint העדכני של גוגל למניעת שגיאות 429
 let url;
-if (model.includes('tts')) {
-    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
+// הפיכת שם המודל לאותיות קטנות כדי לוודא זיהוי של ה-tts
+if (model.toLowerCase().includes('tts')) {
+    // עבור מודל שמע משתמשים ב-predict כדי למנוע שגיאות פרוטוקול ומכסה (429)
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${currentApiKey}`;
 } else {
+    // עבור מודל טקסט רגיל משתמשים ב-generateContent
     url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
 }
             
