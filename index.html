@@ -566,7 +566,7 @@
 
     await new Promise(r => setTimeout(r, waitTime));
 }
-                    } else if (response.status === 403 || response.status === 401) {
+                     else if (response.status === 403 || response.status === 401) {
                         showToast("מפתח ה-API אינו תקין");
                         throw new Error("Invalid API Key");
                     } else {
