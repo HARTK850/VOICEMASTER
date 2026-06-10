@@ -155,33 +155,6 @@
         body.dark-mode #toggleDark svg {
             color: #a78bfa;
         }
-
-        #aryaMenuBtn span {
-    background: linear-gradient(
-        90deg,
-        #6366f1,
-        #8b5cf6,
-        #3b82f6
-    );
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    font-weight: 800;
-}
-
-        #aryaMenuBtn {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-#aryaMenuBtn:focus,
-#aryaMenuBtn:active,
-#aryaMenuBtn:hover {
-    outline: none !important;
-    box-shadow: none !important;
-}
     </style>
 </head>
 <body class="min-h-screen py-8 px-4" id="bodyTag">
@@ -195,31 +168,7 @@
                 </div>
                 <div>
                     <h1 class="text-3xl font-black text-slate-800 tracking-tight leading-none uppercase">Voice<span class="text-indigo-600">Master</span></h1>
-                    <div class="relative inline-block mt-1">
-    <button id="aryaMenuBtn"
-    class="text-xs font-bold text-slate-400 tracking-widest hover:text-indigo-500 transition-colors outline-none border-none focus:outline-none focus:ring-0">
-        <span class="text-indigo-500">מבית @אריה ai</span>
-    </button>
-
-    <div id="aryaMenu"
-        class="hidden absolute right-0 mt-2 w-64 rounded-2xl card shadow-2xl p-2 z-50">
-
-        <a href="https://mitmachim.top/user/%D7%90%D7%A8%D7%99%D7%94-ai"
-           target="_blank"
-           class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-700 transition-all">
-
-            <span class="font-bold text-sm">מתמחים טופ</span>
-        </a>
-
-        <a href="https://f2.freeivr.co.il/user/%D7%90%D7%A8%D7%99%D7%94-ai"
-           target="_blank"
-           class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-700 transition-all">
-
-            <span class="font-bold text-sm">ימות המשיח</span>
-        </a>
-
-    </div>
-</div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">AI Smart Narration Hub</p>
                 </div>
             </div>
             
@@ -529,7 +478,7 @@
                 els.apiKeyPopover.classList.remove('hidden');
                 throw new Error("Missing API Key");
             }
-            console.log(JSON.stringify(payload, null, 2));
+
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
             
             for (let i = 0; i < retries; i++) {
@@ -643,13 +592,7 @@
             toggleLoader('tone', true);
             try {
                 const data = await apiCall(modelText, {
-                    contents: [{ parts: [{ text: `נתח את הטקסט הבא והוסף תגיות סגנון בסוגריים מרובעים [ ] לפי ההקשר.
-
-השתמש בסגנונות קיימים אם הם מתאימים, אך אם צריך - המצא סגנון חדש שמתאים בדיוק למשמעות המשפט.
-
-התגיות צריכות להיות קצרות, טבעיות ומתאימות לקריינות (למשל: [לוחש], [דרמטי], [רגוע מאוד], [חדשותי], [אירוני], [מהיר]).
-אם אין צורך בסגנון מיוחד – אל תוסיף תגית בכלל.
-החזר רק את הטקסט עם התגיות, ללא הסברים. החזר אך ורק את הטקסט המלא עם התגיות המשולבות בתוכו ללא שום הסבר או מלל נוסף. הטקסט: "${text}"` }] }]
+                    contents: [{ parts: [{ text: `נתח את הרגש בטקסט הבא והוסף תגיות סגנון בסוגריים מרובעים כגון [שמח], [עצוב], [כועס], [לחישה], [רגוע], [רציני], [נרגש], [מקצועי] בתחילת משפטים מתאימים בטקסט כדי להנחות קריינות חכמה. החזר אך ורק את הטקסט המלא עם התגיות המשולבות בתוכו ללא שום הסבר או מלל נוסף. הטקסט: "${text}"` }] }]
                 });
                 const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (result) {
@@ -690,7 +633,7 @@
                     segments.push({ style: currentStyle, text: plainText });
                 }
                 const styleTag = match[1].trim();
-                currentStyle = styleMap[styleTag] ?? styleTag.toLowerCase();
+                currentStyle = styleMap[styleTag] || styleTag;
                 lastIndex = regex.lastIndex;
             }
             const remainingText = text.substring(lastIndex).trim();
@@ -716,16 +659,18 @@
                 const audioPromises = segments.map(seg => {
                     return apiCall(modelAudio, {
                         contents: [{ parts: [{ text: `Say in a ${seg.style} style: ${seg.text}` }] }],
-generationConfig: {
-    responseModalities: ["AUDIO"],
-    speechConfig: {
-        voiceConfig: {
-            prebuiltVoiceConfig: {
-                voiceName: els.voiceSelect.value
-            }
-        }
-    }
-}
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: { 
+                                voiceConfig: { 
+                                    voiceConfig: { 
+                                        prebuiltVoiceConfig: { 
+                                            voiceName: els.voiceSelect.value 
+                                        } 
+                                    } 
+                                } 
+                            }
+                        }
                     });
                 });
 
@@ -929,37 +874,6 @@ generationConfig: {
         function escapeHtml(str) {
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
-
-const aryaMenuBtn = document.getElementById("aryaMenuBtn");
-const aryaMenu = document.getElementById("aryaMenu");
-
-let aryaMenuTimeout;
-
-function showAryaMenu() {
-    clearTimeout(aryaMenuTimeout);
-    aryaMenu.classList.remove("hidden");
-}
-
-function hideAryaMenu() {
-    aryaMenuTimeout = setTimeout(() => {
-        aryaMenu.classList.add("hidden");
-    }, 20);
-}
-
-aryaMenuBtn.addEventListener("mouseenter", showAryaMenu);
-aryaMenuBtn.addEventListener("mouseleave", hideAryaMenu);
-
-aryaMenu.addEventListener("mouseenter", showAryaMenu);
-aryaMenu.addEventListener("mouseleave", hideAryaMenu);
-
-aryaMenuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    aryaMenu.classList.toggle("hidden");
-});
-
-document.addEventListener("click", () => {
-    aryaMenu.classList.add("hidden");
-});
     </script>
 </body>
 </html>
