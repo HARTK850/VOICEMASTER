@@ -231,7 +231,7 @@
                     </button>
                     <div id="apiKeyPopover" class="hidden absolute left-0 mt-2 w-72 p-4 card rounded-2xl shadow-2xl z-50">
                         <h4 class="font-bold text-sm mb-2">Gemini API Key</h4>
-                        <textarea id="apiKeyInput" class="w-full p-2 text-xs bg-slate-50 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 mb-2" placeholder="הכנס מפתחות API, כל אחד בשורה נפרדת."></textarea>
+                        <input id="apiKeyInput" type="password" class="w-full p-2 text-xs bg-slate-50 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 mb-2" placeholder="AIzaSy...">
                         <div class="flex gap-2">
                             <button id="saveApiKey" class="flex-1 py-2 bg-indigo-600 text-white text-[10px] font-bold rounded-lg hover:bg-indigo-700">שמור מפתח</button>
                             <button id="clearApiKey" class="flex-1 py-2 bg-red-50 text-red-600 text-[10px] font-bold rounded-lg hover:bg-red-100">מחק</button>
@@ -379,8 +379,7 @@
 
     <script>
         // Global State & Config
-        let apiKeys = JSON.parse(localStorage.getItem('gemini_api_keys') || "[]");
-        let currentKeyIndex = 0;
+        let currentApiKey = localStorage.getItem('gemini_api_key') || "";
         const modelText = "gemini-3.1-flash-lite";
         const modelAudio = "gemini-2.5-flash-preview-tts";
 
@@ -463,16 +462,16 @@
         });
 
         function updateApiStatus() {
-    if (apiKeys.length) {
-        els.apiKeyStatus.innerText = `מוגדרים ${apiKeys.length} מפתחות ✅`;
-        els.apiKeyStatus.style.color = "#16a34a";
-        els.apiKeyInput.value = apiKeys.join("\n");
-    } else {
-        els.apiKeyStatus.innerText = "הגדר מפתחות ⚠️";
-        els.apiKeyStatus.style.color = "";
-        els.apiKeyInput.value = "";
-    }
-}
+            if (currentApiKey) {
+                els.apiKeyStatus.innerText = "מפתח מוגדר ✅";
+                els.apiKeyStatus.style.color = "#16a34a";
+                els.apiKeyInput.value = currentApiKey;
+            } else {
+                els.apiKeyStatus.innerText = "הגדר מפתח ⚠️";
+                els.apiKeyStatus.style.color = "";
+                els.apiKeyInput.value = "";
+            }
+        }
 
         // Dark Mode Click Handler
         document.getElementById('toggleDark').onclick = () => {
@@ -487,31 +486,22 @@
         };
 
         els.saveApiKey.onclick = () => {
-    const keys = els.apiKeyInput.value
-        .split('\n')
-        .map(k => k.trim())
-        .filter(Boolean);
-
-    if (!keys.length) return;
-
-    apiKeys = keys;
-    saveKeys(apiKeys);
-
-    currentKeyIndex = 0;
-
-    updateApiStatus();
-    els.apiKeyPopover.classList.add('hidden');
-
-    showToast(`נשמרו ${keys.length} מפתחות API`, "success");
-};
+            const key = els.apiKeyInput.value.trim();
+            if (key) {
+                currentApiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                updateApiStatus();
+                els.apiKeyPopover.classList.add('hidden');
+                showToast("מפתח ה-API נשמר בהצלחה", "success");
+            }
+        };
 
         els.clearApiKey.onclick = () => {
-    apiKeys = [];
-    saveKeys(apiKeys);
-    currentKeyIndex = 0;
-    updateApiStatus();
-    showToast("כל המפתחות נמחקו");
-};
+            currentApiKey = "";
+            localStorage.removeItem('gemini_api_key');
+            updateApiStatus();
+            showToast("מפתח ה-API נמחק");
+        };
 
         document.addEventListener('click', () => els.apiKeyPopover.classList.add('hidden'));
         els.apiKeyPopover.onclick = (e) => e.stopPropagation();
@@ -533,69 +523,37 @@
         };
 
         // API Call Handler with Exponential Backoff Retries
-        async function apiCall(model, payload, retries = 6) {
-    if (!apiKeys.length) {
-        showToast("אנא הגדר לפחות מפתח API אחד");
-        els.apiKeyPopover.classList.remove('hidden');
-        throw new Error("Missing API Keys");
-    }
-
-    const urlBase = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-    for (let i = 0; i < retries; i++) {
-        const key = getNextApiKey();
-
-        if (!key) {
-            await new Promise(r => setTimeout(r, 1500));
-            continue;
+        async function apiCall(model, payload, retries = 5) {
+            if (!currentApiKey) {
+                showToast("אנא הגדר מפתח API בתפריט למעלה");
+                els.apiKeyPopover.classList.remove('hidden');
+                throw new Error("Missing API Key");
+            }
+            console.log(JSON.stringify(payload, null, 2));
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (response.ok) return data;
+                    if (response.status === 429) {
+                        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                    } else if (response.status === 403 || response.status === 401) {
+                        showToast("מפתח ה-API אינו תקין");
+                        throw new Error("Invalid API Key");
+                    } else {
+                        throw new Error(data.error?.message || "Communication Error");
+                    }
+                } catch (e) {
+                    if (i === retries - 1) throw e;
+                }
+            }
         }
-
-        const url = `${urlBase}?key=${key}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json().catch(() => ({}));
-
-            // ❌ מפתח לא תקין
-            if (response.status === 401 || response.status === 403) {
-                apiKeys = apiKeys.filter(k => k !== key);
-                saveKeys(apiKeys);
-                currentKeyIndex = 0;
-                showToast("מפתח API נמחק (לא תקין)");
-                continue;
-            }
-
-            // ⛔ עומס - 429 (החלק החשוב)
-            if (response.status === 429) {
-                const retryAfter = response.headers.get("retry-after");
-
-                const waitTime =
-                    retryAfter ? parseInt(retryAfter) * 1000 :
-                    Math.min(10000, Math.pow(2, i) * 1200) + Math.random() * 500;
-
-                await new Promise(r => setTimeout(r, waitTime));
-                continue;
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error?.message || "API Error");
-            }
-
-            return data;
-
-        } catch (e) {
-            if (i === retries - 1) throw e;
-            await new Promise(r => setTimeout(r, 1000 + i * 500));
-        }
-    }
-
-    throw new Error("נכשל לאחר מספר ניסיונות");
-}
 
         function showToast(msg, type = 'error') {
             els.toastMessage.innerText = msg;
@@ -747,118 +705,84 @@
         }
 
         els.generateBtn.onclick = async () => {
-    const text = els.textInput.value.trim();
-    if (!text) return showToast("הכנס טקסט לקריינות");
-
-    toggleLoader('btn', true);
-
-    try {
-        const segments = parseMultiStyleText(text);
-
-        const results = [];
-
-        // 🔥 queue יציב עם האטה + הגנה מ־429
-        for (let i = 0; i < segments.length; i++) {
-            const seg = segments[i];
-
-            const res = await apiCall(modelAudio, {
-                contents: [{
-                    parts: [{
-                        text: `Say in a ${seg.style} style: ${seg.text}`
-                    }]
-                }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: {
-                        voiceConfig: {
-                            prebuiltVoiceConfig: {
-                                voiceName: els.voiceSelect.value
-                            }
-                        }
-                    }
-                }
-            });
-
-            results.push(res);
-
-            // ⛔ האטה חכמה נגד עומס (חשוב מאוד ל־429)
-            const baseDelay = 1200;
-            const jitter = Math.random() * 800;
-            const extraDelay = i % 3 === 0 ? 600 : 0;
-
-            await new Promise(r => setTimeout(r, baseDelay + jitter + extraDelay));
-        }
-
-        // 🔊 חילוץ אודיו
-        let totalLength = 0;
-
-        const byteSegments = results.map(res => {
-            const base64Data =
-                res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-
-            if (!base64Data) return new Uint8Array(0);
-
-            const binary = atob(base64Data);
-            const bytes = new Uint8Array(binary.length);
-
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
+            const text = els.textInput.value.trim();
+            if (!text) return showToast("הכנס טקסט לקריינות");
+            
+            toggleLoader('btn', true);
+            try {
+                const segments = parseMultiStyleText(text);
+                
+                // Concurrent performance optimizations for parallel model audio synthesis streams
+                const audioPromises = segments.map(seg => {
+                    return apiCall(modelAudio, {
+                        contents: [{ parts: [{ text: `Say in a ${seg.style} style: ${seg.text}` }] }],
+generationConfig: {
+    responseModalities: ["AUDIO"],
+    speechConfig: {
+        voiceConfig: {
+            prebuiltVoiceConfig: {
+                voiceName: els.voiceSelect.value
             }
-
-            totalLength += bytes.length;
-            return bytes;
-        });
-
-        if (totalLength === 0) {
-            throw new Error("לא התקבלו נתוני שמע מהשרת");
-        }
-
-        const combinedPCM = new Uint8Array(totalLength);
-        let offset = 0;
-
-        for (const seg of byteSegments) {
-            combinedPCM.set(seg, offset);
-            offset += seg.length;
-        }
-
-        // 🎚️ זיהוי sample rate
-        let sampleRate = 24000;
-
-        for (const res of results) {
-            const mime =
-                res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "";
-
-            if (mime.includes("rate=")) {
-                sampleRate = parseInt(mime.split("rate=")[1]) || 24000;
-                break;
-            }
-        }
-
-        const wavBlob = pcmToWav(combinedPCM, sampleRate);
-        const base64Audio = await blobToBase64(wavBlob);
-
-        const track = {
-            id: "track_" + Date.now(),
-            createdAt: Date.now(),
-            title: text.substring(0, 35),
-            voice: els.voiceSelect.value,
-            style: segments.map(s => s.style).join(", "),
-            audioData: base64Audio
-        };
-
-        await saveTrack(track);
-        await renderStoredTracks();
-
-        showToast("קריינות נוצרה בהצלחה", "success");
-
-    } catch (e) {
-        if (e.message !== "Missing API Keys") {
-            showToast(e.message);
         }
     }
+}
+                    });
+                });
 
-    toggleLoader('btn', false);
-};
+                const results = await Promise.all(audioPromises);
+                
+                let totalLength = 0;
+                const byteSegments = results.map(res => {
+                    const base64Data = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                    if (!base64Data) return new Uint8Array(0);
+                    const binary = atob(base64Data);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let idx = 0; idx < binary.length; idx++) {
+                        bytes[idx] = binary.charCodeAt(idx);
+                    }
+                    totalLength += bytes.length;
+                    return bytes;
+                });
+
+                if (totalLength === 0) throw new Error("לא התקבלו נתוני שמע מהשרת");
+
+                const combinedPCM = new Uint8Array(totalLength);
+                let currentOffset = 0;
+                for (const segmentArray of byteSegments) {
+                    combinedPCM.set(segmentArray, currentOffset);
+                    currentOffset += segmentArray.length;
+                }
+
+                let sampleRate = 24000;
+                for (const res of results) {
+                    const mimeType = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "";
+                    if (mimeType.includes('rate=')) {
+                        sampleRate = parseInt(mimeType.split('rate=')[1]) || 24000;
+                        break;
+                    }
+                }
+
+                const wavBlob = pcmToWav(combinedPCM, sampleRate);
+                const base64Audio = await blobToBase64(wavBlob);
+                
+                const track = {
+                    id: 'track_' + Date.now(),
+                    createdAt: Date.now(),
+                    title: text.substring(0, 35),
+                    voice: els.voiceSelect.value,
+                    style: segments.map(s => s.style).join(', '),
+                    audioData: base64Audio
+                };
+
+                await saveTrack(track);
+                await renderStoredTracks();
+                showToast("קריינות משולבת הופקה ויושרה בהצלחה!", "success");
+                
+            } catch (e) { 
+                if(e.message !== "Missing API Key") showToast(e.message); 
+            }
+            toggleLoader('btn', false);
+        };
 
         // --- Low-level Storage & Conversion Utilities ---
 
@@ -1036,29 +960,6 @@ aryaMenuBtn.addEventListener("click", (e) => {
 document.addEventListener("click", () => {
     aryaMenu.classList.add("hidden");
 });
-
-        const lastUsed = {};
-
-function getNextApiKey() {
-    if (!apiKeys.length) return null;
-
-    const now = Date.now();
-
-    for (let i = 0; i < apiKeys.length; i++) {
-        const key = apiKeys[currentKeyIndex % apiKeys.length];
-        currentKeyIndex++;
-
-        // מונע שימוש צפוף מדי באותו מפתח
-        if (lastUsed[key] && now - lastUsed[key] < 1200) {
-            continue;
-        }
-
-        lastUsed[key] = now;
-        return key;
-    }
-
-    return null; // אם כולם "עסוקים"
-}
     </script>
 </body>
 </html>
