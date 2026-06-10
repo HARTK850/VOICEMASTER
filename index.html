@@ -533,50 +533,69 @@
         };
 
         // API Call Handler with Exponential Backoff Retries
-        async function apiCall(model, payload, retries = 5) {
-            if (!apiKeys.length) {
-    showToast("אנא הגדר לפחות מפתח API אחד");
-    els.apiKeyPopover.classList.remove('hidden');
-    throw new Error("Missing API Keys");
-}
-            
-            const key = getNextApiKey();
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-            
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const data = await response.json();
-                    if (response.status === 401 || response.status === 403) {
-                    apiKeys = apiKeys.filter(k => k !== key);
-                    saveKeys(apiKeys);
-                    currentKeyIndex = 0;
+        async function apiCall(model, payload, retries = 6) {
+    if (!apiKeys.length) {
+        showToast("אנא הגדר לפחות מפתח API אחד");
+        els.apiKeyPopover.classList.remove('hidden');
+        throw new Error("Missing API Keys");
+    }
 
-                    showToast("מפתח API לא תקין ונמחק מהרשימה");
-                    continue;
-                    }
-                    if (response.ok) return data;
-                    if (response.status === 429) {
-    const retryAfter = response.headers.get("retry-after");
-    const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, i) * 1000;
+    const urlBase = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-    await new Promise(r => setTimeout(r, waitTime));
-}
-                     else if (response.status === 403 || response.status === 401) {
-                        showToast("מפתח ה-API אינו תקין");
-                        throw new Error("Invalid API Key");
-                    } else {
-                        throw new Error(data.error?.message || "Communication Error");
-                    }
-                } catch (e) {
-                    if (i === retries - 1) throw e;
-                }
-            }
+    for (let i = 0; i < retries; i++) {
+        const key = getNextApiKey();
+
+        if (!key) {
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
         }
+
+        const url = `${urlBase}?key=${key}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            // ❌ מפתח לא תקין
+            if (response.status === 401 || response.status === 403) {
+                apiKeys = apiKeys.filter(k => k !== key);
+                saveKeys(apiKeys);
+                currentKeyIndex = 0;
+                showToast("מפתח API נמחק (לא תקין)");
+                continue;
+            }
+
+            // ⛔ עומס - 429 (החלק החשוב)
+            if (response.status === 429) {
+                const retryAfter = response.headers.get("retry-after");
+
+                const waitTime =
+                    retryAfter ? parseInt(retryAfter) * 1000 :
+                    Math.min(10000, Math.pow(2, i) * 1200) + Math.random() * 500;
+
+                await new Promise(r => setTimeout(r, waitTime));
+                continue;
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error?.message || "API Error");
+            }
+
+            return data;
+
+        } catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise(r => setTimeout(r, 1000 + i * 500));
+        }
+    }
+
+    throw new Error("נכשל לאחר מספר ניסיונות");
+}
 
         function showToast(msg, type = 'error') {
             els.toastMessage.innerText = msg;
@@ -728,88 +747,118 @@
         }
 
         els.generateBtn.onclick = async () => {
-            const text = els.textInput.value.trim();
-            if (!text) return showToast("הכנס טקסט לקריינות");
-            
-            toggleLoader('btn', true);
-            try {
-                const segments = parseMultiStyleText(text);
-                
-                // Concurrent performance optimizations for parallel model audio synthesis streams
-const results = [];
+    const text = els.textInput.value.trim();
+    if (!text) return showToast("הכנס טקסט לקריינות");
 
-for (const seg of segments) {
-    const res = await apiCall(modelAudio, {
-        contents: [{ parts: [{ text: `Say in a ${seg.style} style: ${seg.text}` }] }],
-        generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-                voiceConfig: {
-                    prebuiltVoiceConfig: {
-                        voiceName: els.voiceSelect.value
+    toggleLoader('btn', true);
+
+    try {
+        const segments = parseMultiStyleText(text);
+
+        const results = [];
+
+        // 🔥 queue יציב עם האטה + הגנה מ־429
+        for (let i = 0; i < segments.length; i++) {
+            const seg = segments[i];
+
+            const res = await apiCall(modelAudio, {
+                contents: [{
+                    parts: [{
+                        text: `Say in a ${seg.style} style: ${seg.text}`
+                    }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: els.voiceSelect.value
+                            }
+                        }
                     }
                 }
+            });
+
+            results.push(res);
+
+            // ⛔ האטה חכמה נגד עומס (חשוב מאוד ל־429)
+            const baseDelay = 1200;
+            const jitter = Math.random() * 800;
+            const extraDelay = i % 3 === 0 ? 600 : 0;
+
+            await new Promise(r => setTimeout(r, baseDelay + jitter + extraDelay));
+        }
+
+        // 🔊 חילוץ אודיו
+        let totalLength = 0;
+
+        const byteSegments = results.map(res => {
+            const base64Data =
+                res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+
+            if (!base64Data) return new Uint8Array(0);
+
+            const binary = atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+
+            totalLength += bytes.length;
+            return bytes;
+        });
+
+        if (totalLength === 0) {
+            throw new Error("לא התקבלו נתוני שמע מהשרת");
+        }
+
+        const combinedPCM = new Uint8Array(totalLength);
+        let offset = 0;
+
+        for (const seg of byteSegments) {
+            combinedPCM.set(seg, offset);
+            offset += seg.length;
+        }
+
+        // 🎚️ זיהוי sample rate
+        let sampleRate = 24000;
+
+        for (const res of results) {
+            const mime =
+                res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "";
+
+            if (mime.includes("rate=")) {
+                sampleRate = parseInt(mime.split("rate=")[1]) || 24000;
+                break;
             }
         }
-    });
 
-    results.push(res);
+        const wavBlob = pcmToWav(combinedPCM, sampleRate);
+        const base64Audio = await blobToBase64(wavBlob);
 
-    // קטן מאוד אבל קריטי נגד rate limit
-    await new Promise(r => setTimeout(r, 300));
-}           
-                let totalLength = 0;
-                const byteSegments = results.map(res => {
-                    const base64Data = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-                    if (!base64Data) return new Uint8Array(0);
-                    const binary = atob(base64Data);
-                    const bytes = new Uint8Array(binary.length);
-                    for (let idx = 0; idx < binary.length; idx++) {
-                        bytes[idx] = binary.charCodeAt(idx);
-                    }
-                    totalLength += bytes.length;
-                    return bytes;
-                });
-
-                if (totalLength === 0) throw new Error("לא התקבלו נתוני שמע מהשרת");
-
-                const combinedPCM = new Uint8Array(totalLength);
-                let currentOffset = 0;
-                for (const segmentArray of byteSegments) {
-                    combinedPCM.set(segmentArray, currentOffset);
-                    currentOffset += segmentArray.length;
-                }
-
-                let sampleRate = 24000;
-                for (const res of results) {
-                    const mimeType = res.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "";
-                    if (mimeType.includes('rate=')) {
-                        sampleRate = parseInt(mimeType.split('rate=')[1]) || 24000;
-                        break;
-                    }
-                }
-
-                const wavBlob = pcmToWav(combinedPCM, sampleRate);
-                const base64Audio = await blobToBase64(wavBlob);
-                
-                const track = {
-                    id: 'track_' + Date.now(),
-                    createdAt: Date.now(),
-                    title: text.substring(0, 35),
-                    voice: els.voiceSelect.value,
-                    style: segments.map(s => s.style).join(', '),
-                    audioData: base64Audio
-                };
-
-                await saveTrack(track);
-                await renderStoredTracks();
-                showToast("קריינות משולבת הופקה ויושרה בהצלחה!", "success");
-                
-            } catch (e) { 
-                if(e.message !== "Missing API Key") showToast(e.message); 
-            }
-            toggleLoader('btn', false);
+        const track = {
+            id: "track_" + Date.now(),
+            createdAt: Date.now(),
+            title: text.substring(0, 35),
+            voice: els.voiceSelect.value,
+            style: segments.map(s => s.style).join(", "),
+            audioData: base64Audio
         };
+
+        await saveTrack(track);
+        await renderStoredTracks();
+
+        showToast("קריינות נוצרה בהצלחה", "success");
+
+    } catch (e) {
+        if (e.message !== "Missing API Keys") {
+            showToast(e.message);
+        }
+    }
+
+    toggleLoader('btn', false);
+};
 
         // --- Low-level Storage & Conversion Utilities ---
 
@@ -993,16 +1042,22 @@ document.addEventListener("click", () => {
 function getNextApiKey() {
     if (!apiKeys.length) return null;
 
-    let key = apiKeys[currentKeyIndex % apiKeys.length];
-    currentKeyIndex++;
-
     const now = Date.now();
-    if (lastUsed[key] && now - lastUsed[key] < 1000) {
-        return null; // מונע שימוש מהיר מדי
+
+    for (let i = 0; i < apiKeys.length; i++) {
+        const key = apiKeys[currentKeyIndex % apiKeys.length];
+        currentKeyIndex++;
+
+        // מונע שימוש צפוף מדי באותו מפתח
+        if (lastUsed[key] && now - lastUsed[key] < 1200) {
+            continue;
+        }
+
+        lastUsed[key] = now;
+        return key;
     }
 
-    lastUsed[key] = now;
-    return key;
+    return null; // אם כולם "עסוקים"
 }
     </script>
 </body>
