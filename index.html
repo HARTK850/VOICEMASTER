@@ -530,13 +530,7 @@
                 throw new Error("Missing API Key");
             }
             // אם מדובר במודל שמע, נשתמש ב-Endpoint העדכני של גוגל למניעת שגיאות 429
-let url;
-if (model.toLowerCase().includes('tts')) {
-    // כתובת ה-API הייעודית להפקת מדיה / שמע
-    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:synthesizeSpeech?key=${currentApiKey}`;
-} else {
-    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
-}
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentApiKey}`;
             
             for (let i = 0; i < retries; i++) {
                 try {
